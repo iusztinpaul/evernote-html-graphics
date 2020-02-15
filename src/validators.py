@@ -48,7 +48,7 @@ class KeyValidator(PatternValidator):
 
     PATTERN = re.compile(r'^[a-zA-Z ]+$')
 
-    BANNED_KEYWORDS = ('RON', )
+    BANNED_KEYWORDS = [currency.value for currency in data_types.Currency]
 
     @classmethod
     def is_valid(cls, item: str) -> bool:
