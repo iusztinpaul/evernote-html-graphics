@@ -43,10 +43,10 @@ class HardcodedValidator(Validator):
 
 class KeyValidator(PatternValidator):
     """
-    A key / name should contain only alphabet letters and spaces.
+    A key / name should contain only alphabet letters and &.
     """
 
-    PATTERN = re.compile(r'^[a-zA-Z ]+$')
+    PATTERN = re.compile(r'^[a-zA-Z&]+$')
 
     BANNED_KEYWORDS = [currency.value for currency in data_types.Currency]
 

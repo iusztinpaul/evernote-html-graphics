@@ -1,4 +1,5 @@
-import utils, graphs
+import utils
+import graphs
 from parsers import HTMLMoneyDistributionParser
 
 args = utils.get_program_args()

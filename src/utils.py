@@ -20,7 +20,7 @@ def get_data_from_html(html_file_path: str) -> List:
 
     normalized_data_list = []
     for unnormalized_item in data.split('~!@#'):
-        for normalized_item in re.split(r':|=|[ ]', unnormalized_item):
+        for normalized_item in re.split(r':|=|[ ]|Â', unnormalized_item):
             normalized_item = normalized_item.strip()
             normalized_data_list.append(normalized_item)
 

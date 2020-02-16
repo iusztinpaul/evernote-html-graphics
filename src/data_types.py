@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Set
+from typing import Set, List, Tuple, Any
 
 
 class MoneyDistributionState(Enum):
@@ -40,6 +40,9 @@ class MoneyDistribution:
 
         return titles
 
+    def spending_sub_titles(self, title: MoneyDistributionTitle) -> Set[str]:
+        return self._money_distribution[title.value].keys() - {'TOTAL'}
+
     @property
     def spending_distribution(self):
         assert MoneyDistributionTitle.INCOME.value in self._money_distribution
@@ -47,16 +50,59 @@ class MoneyDistribution:
         total_income = self.get_total_value(MoneyDistributionTitle.INCOME)
         total_currency = self.get_total_currency(MoneyDistributionTitle.INCOME)
 
+        sub_totals_titles = []
         sub_totals = []
+        spending_sub_distributions = []
+
         for title in self.spending_titles:
             if title != MoneyDistributionTitle.INCOME:
+                sub_totals_titles.append(title)
                 total_value = self.get_total_value(title)
                 sub_totals.append(total_value)
 
-        return total_income, total_currency, [
+                spending_sub_distribution = self.spending_sub_distribution(title)
+                spending_sub_distributions.append(spending_sub_distribution)
+
+        return total_income, total_currency, sub_totals_titles, [
             sub_total * 100 / total_income
             for sub_total in sub_totals
+        ], spending_sub_distributions
+
+    def spending_sub_distribution(self, title: MoneyDistributionTitle):
+        sub_titles_data = self._money_distribution[title.value].copy()
+
+        if not self._check_unicity_for_currency(sub_titles_data):
+            return Exception('Cannot compute graphic: Distribution of different currencies for title: {}'.format(title))
+
+        total_value = sub_titles_data['TOTAL']['value']
+        total_currency = sub_titles_data['TOTAL']['currency']
+        del sub_titles_data['TOTAL']
+
+        sub_title_keys = []
+        sub_title_values = []
+        for sub_title_key, sub_title_cost in sub_titles_data.items():
+            sub_title_keys.append(sub_title_key)
+
+            sub_title_value = sub_title_cost['value']
+            sub_title_values.append(sub_title_value)
+
+        return title, total_value, total_currency, sub_title_keys, [
+            sub_title_value * 100 / total_value
+            for sub_title_value in sub_title_values
         ]
+
+    def _check_unicity_for_currency(self, sub_titles_data: dict):
+        if len(sub_titles_data) == 0:
+            return True
+
+        sub_titles_currency = [sub_title_data['currency'] for sub_title_data in sub_titles_data.values()]
+        example_currency = sub_titles_currency.pop(0)
+
+        for currency in sub_titles_currency:
+            if example_currency != currency:
+                return False
+
+        return True
 
     @property
     def income_titles(self):
@@ -69,14 +115,13 @@ class MoneyDistribution:
         total_income = self.get_total_value(MoneyDistributionTitle.INCOME)
         total_currency = self.get_total_currency(MoneyDistributionTitle.INCOME)
 
-        sub_income_keys = self.get_title(MoneyDistributionTitle.INCOME).keys()
+        sub_income_keys = list(self.get_title(MoneyDistributionTitle.INCOME).keys() - {'TOTAL'})
         sub_income_values = [
            self.get_value(MoneyDistributionTitle.INCOME, sub_income_key)
            for sub_income_key in sub_income_keys
-           if sub_income_key != 'TOTAL'
         ]
 
-        return total_income, total_currency, [
+        return total_income, total_currency, sub_income_keys, [
             sub_income * 100 / total_income
             for sub_income in sub_income_values
         ]
