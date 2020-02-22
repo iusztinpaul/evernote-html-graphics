@@ -79,8 +79,9 @@ class HTMLMoneyDistributionParser:
 
         return self._next(MoneyDistributionState.CURRENCY)
 
-    def _next(self, next_state):
+    def _next(self, next_state: MoneyDistributionState):
         assert next_state is not None
+        assert isinstance(next_state, MoneyDistributionState)
 
         self._data_index += 1
 
